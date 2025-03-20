@@ -453,7 +453,7 @@ X-Secret-Key: sql-server-secret-123
 
 ### swagger 接口文档
 
-1、 http://127.0.0.1:5000/api/swagger  
+1、 http://127.0.0.1:5000/swagger  
 2、 GetData和Soap类型接口不支持在swagger中测试，需要使用postman或soapui进行测试。请求头apikey可在右上角按钮中添加。  
 
 ![swagger接口文档](doc/img/swagger测试.png)  
