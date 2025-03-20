@@ -1,20 +1,32 @@
-# Web API集成发布服务
+# 基于数据库的Web API集成发布服务
 
 ## 产品概述
 
-本产品是一个基于数据库集成的Web API服务，提供四个主要功能：
-1. **SQL执行引擎**：安全的代理执行SQL增删改查并返回标准结构数据
+本产品是一个基于数据库集成的轻量级Web API服务，提供四个主要功能：
+1. **SQL代理执行引擎**：安全的代理执行SQL增删改查并返回标准结构数据
 2. **WebService代理服务**：代理调用SOAP WebService并处理响应返回标准结构数据
 3. **WebAPI代理服务**：代理调用REST API并处理响应返回标准结构数据
 4. **API接口发布服务**：提供 GET/POST/SOAP 三种API方式发布接口
 
 
 ### 使用场景：
-1、扩展MSSQL数据库不依赖链接服务器，直接调用其他类型数据库（SQL Server、MySQL、Oracle、PostgreSQL等）的能力。  
-2、扩展MSSQL数据库调用WebService/WebAPI服务的能力。  
-3、扩展数据库发布WEB接口的能力，将存储过程转换成GET/POST/SOAP 三种方式的API供调用。 
 
-#### 配合MSSQL调用的CLR组件 【SqlEngineIntegration】
+1、扩展MSSQL数据库不依赖链接服务器，直接调用其他类型数据库（SQL Server、MySQL、Oracle、PostgreSQL、国产数据库等）的能力。【需要注册配套的CLR组件，mssql数据库需要2012及以上版本】   
+例如：可以实现sqlserver调用oracle等数据源执行语句。配合定时任务实现从数据库拉取数据或回写数据到对方数据库。 也可基于mssql数据库实现各类型数据库之间的数据中转和同步。
+
+2、扩展MSSQL数据库调用WebService/WebAPI服务的能力。【需要注册配套的CLR组件，mssql数据库需要2012及以上版本】  
+例如：可以实现在sqlserver中直接写语句调用WebService/WebAPI服务。配合定时任务实现从API接口拉取数据或回写数据到API接口。也可基于mssql数据库实现各类API接口之间的数据中转和同步。
+
+3、扩展数据库发布WEB接口的能力，将存储过程转换成GET/POST/SOAP 三种方式的API供调用。   
+例如：可以在任意类型数据库上创建存储过程并将其发布成WEBAPI或WEBSERVICE接口供其他系统调用。并且可以为接口指定访问密钥，防止接口被非法调用。  
+
+4、综上所述只要你会数据库，不需要懂任何代码就可以实现各种系统之间简单接口的数据集成。非常适合需要快速实现系统之间数据集成的场景。 单机安装和部署也非常简单，不需要依赖庞大中间件或平台。 
+
+5、如果您的项目中有需要，主页联系方式或私信我。  
+
+#### 下图是配合MSSQL调用的CLR组件 【SqlEngineIntegration】 
+提供了丰富的自定义函数和存储过程供sqlserver调用。 
+注意：CLR组件只支持windows版本的SQLSERVER！ 
 
 ![CLR函数和存储过程](doc/img/CLR函数和存储过程.png)
 
@@ -62,7 +74,7 @@ PostgreSQL： Host=192.168.164.10;Port=5432;Username=postgres;Password=123456; D
 {
   "GetDataApi": {},  //GET方式api的配置
   "PostDataApi": {}, //POST方式api的配置
-  "SoapDataApi": {   //SOAP方式api的配置
+  "WebServiceApi": {   //SOAP方式api的配置
     "Methods": {
       "Name": "GetStudentList", //方法名称 对应存储过程名称
       "DataSourceName": "SqlServerDb", //数据源名称 对应DataSources中的Name
@@ -84,12 +96,14 @@ PostgreSQL： Host=192.168.164.10;Port=5432;Username=postgres;Password=123456; D
 4、POST /api/SqlExecution/executeNonQuery  执行非查询操作的SQL语句 如update users set status=1 where id=1  
 5、parameters为参数化查询的参数，参数名称为SQL语句中的参数名称，参数值为参数的值。  
 
-![执行数据库查询](doc/img/执行数据库查询.png)
+![执行数据库查询](doc/img/执行数据库查询.png)  
+
+下图是CLR调用服务查询数据库  
 ![clr查询数据库](./doc/img/CLR查询数据库.png)
 
 
-请求体例子：
-注意：sql语句种的参数需要根据数据库类型使用不同的语法，如Oracle需要使用:参数名,SqlServer/MySQL/其他需要使用@参数名。也可以不使用参数化查询，直接在sql语句中写死参数值。
+请求例子：
+注意：sql语句中的参数定义Oracle使用: 参数名, SqlServer/MySQL/其他使用@参数名。也可以不使用参数化查询，直接在sql语句中写死参数值。mssql使用CLR调用尽量使用参数化查询，直接写sql语句字符串用''''双引号转义！
 
 ```
 {
@@ -119,10 +133,10 @@ PostgreSQL： Host=192.168.164.10;Port=5432;Username=postgres;Password=123456; D
 #### WebService代理调用服务
 
 1、POST /api/WebServiceProxy/call  
-2、调用本地测试文件路径格式serviceUrl为file://C:\\Users\\Administrator\\Desktop\\testxml\\test.xml  
+2、测试本地测试文件路径格式serviceUrl为file://C:\\Users\\Administrator\\Desktop\\testxml\\test.xml  
 3、调用远程WebService服务格式serviceUrl为http://ws.webxml.com.cn/WebServices/MobileCodeWS.asmx  
 4、requestXmlBase64为SOAP请求XML的Base64编码，xPath为提取数据的XPath路径。  
-5、soapAction通过wsdl获得。  
+5、soapAction通过soapui或查看wsdl获得，调用远程地址是必选参数。  
 6、soap接口验证一般是在请求体里，如有验证直接放requestXmlBase64里。  
 
 ##### XPath 用法（WebService）
@@ -144,7 +158,9 @@ PostgreSQL： Host=192.168.164.10;Port=5432;Username=postgres;Password=123456; D
    - 复杂节点：自动展平为表格结构
 ```
 
-![执行WebService查询](doc/img/代理调用soap.png)
+![执行WebService查询](doc/img/代理调用soap.png)  
+
+下图是CLR调用服务查询WEBSERVICE接口 
 ![clr查询ws](./doc/img/clr查询ws.png)
 
 
@@ -182,7 +198,7 @@ PostgreSQL： Host=192.168.164.10;Port=5432;Username=postgres;Password=123456; D
 #### WebAPI代理调用服务
 
 1、POST /api/WebApiProxy/call  
-2、调用本地测试文件路径格式serviceUrl为file://C:\\Users\\Administrator\\Desktop\\testjson\\test.json  
+2、本地测试文件路径格式serviceUrl为file://C:\\Users\\Administrator\\Desktop\\testjson\\test.json  
 3、调用远程WebAPI服务格式serviceUrl为http://jsonplaceholder.typicode.com/posts  
 4、method为请求方法，如GET、POST、PUT、DELETE等。  
 5、headers为请求头，如Authorization、Content-Type等。  
@@ -191,7 +207,7 @@ PostgreSQL： Host=192.168.164.10;Port=5432;Username=postgres;Password=123456; D
 8、jpath为提取数据的JPath路径。  
 9、不需要的参数不要传，以免解析出错！  
 
-###### JPath 用法（WebAPI）
+##### JPath 用法（WebAPI）
 
 用于从 JSON 响应中提取数据：
 
@@ -213,15 +229,19 @@ PostgreSQL： Host=192.168.164.10;Port=5432;Username=postgres;Password=123456; D
    - 简单值：转换为单值字典
 ```
 
-![执行WebAPI查询](doc/img/代理调用webapi.png)
-![clr查询webapi](./doc/img/clr查询webapi.png)
-请求体例子：
+![执行WebAPI查询](doc/img/代理调用webapi.png)  
+
+下图是CLR调用服务查询WEBAPI接口 
+![clr查询webapi](./doc/img/clr查询webapi.png)  
+
+请求例子：
 ```
   {
   "serviceUrl": "http://jsonplaceholder.typicode.com/posts",
   "method": "GET",
   "jpath": "[*]"
   }
+
 本地测试：
   {
   "serviceUrl": "file://C:\\Users\\Administrator\\Desktop\\testxml\\test.json",
@@ -274,17 +294,18 @@ POST请求发送JSON数据
 
 #### WEBAPI发布服务
 
-1、GET方式  /api/GetData/方法名称?参数1=值1&参数2=值2 如/api/GetData/GetStudentList?secretKey=sql-server-secret-123&class=1&grade=2  这种方式只支持查询数据，密钥和条件全部在url中拼接。  
+1、GET方式  /api/GetData/方法名称?参数1=值1&参数2=值2 如/api/GetData/GetStudentList?secretKey=sql-server-secret-123&class=1&grade=2  这种方式适合查询数据接口，密钥和条件全部在url中拼接。  
 2、POST方式 /api/PostData/方法名称 如/api/PostData/InsertStudent 这种方式支持查询、插入、更新、删除数据。  
 3、对应方式的方法名称对应appsettings.json中的Methods.Name 即数据源中存储过程名（注意大小写一致）  
-5、POST请求体为json格式，参数为存储过程的参数，参数名称和类型需要和存储过程一致。  
+5、POST请求体为json格式，参数名称必须要和存储过程一致。  
 6、POST请求体数据需要是扁平化数据，不要嵌套。  
-7、POST请求只支持单行数据，需要插入或更新多行的需要请求多次实现！  
-8、POST请求 请求头中需要包含X-Secret-Key，值为appsettings.json中的Methods.SecretKey  
+7、POST请求只支持单条数据，需要插入或更新多条的需要请求多次实现！  
+8、POST请求头中需要包含X-Secret-Key，值为appsettings.json中的Methods.SecretKey  
 
 #### GET 接口
 
-![发布get接口](doc/img/发布get接口.png)
+![发布get接口](doc/img/发布get接口.png)  
+
 通过 URL 查询参数调用存储过程：
 
 ```
@@ -367,7 +388,7 @@ X-Secret-Key: sql-server-secret-123
 1、/ws/soapservice.asmx  浏览器直接打开或加上?wsdl可以看到wsdl描述文件。接口支持查询、插入、更新、删除数据。  
 2、requestPara请求体为xml格式，使用CDATA包裹。XML根路径必须是Parameters包裹。  
 3、请求体数据需要是扁平化数据，不要嵌套。  
-4、只支持单行数据，需要插入或更新多行的需要请求多次实现！  
+4、请求只支持单条数据，需要插入或更新多条的需要请求多次实现！  
 5、请求头中的tem:secretKey，值为appsettings.json中的Methods.SecretKey  
 6、请求头中的tem:methodName，值为appsettings.json中的Methods.Name 即数据源中存储过程名（注意大小写一致）  
 
@@ -430,6 +451,12 @@ X-Secret-Key: sql-server-secret-123
    </soap:Envelope>
    ```
 
+### swagger 接口文档
+
+1、 http://127.0.0.1:5000/api/swagger  
+2、 GetData和Soap类型接口不支持在swagger中测试，需要使用postman或soapui进行测试。请求头apikey可在右上角按钮中添加。  
+
+![swagger接口文档](doc/img/swagger测试.png)  
 
 ## 功能特性
 
