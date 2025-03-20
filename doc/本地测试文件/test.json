@@ -1,0 +1,60 @@
+{
+  "Students": [
+    {
+      "patientName": "张三",
+      "sex": "F",
+      "age": 32,
+      "birth": "19880801",
+      "Subjects": [
+        {
+          "Name": "数学",
+          "enName": "shuxue",
+          "Score": 90
+        },
+        {
+          "Name": "语文",
+          "enName": "yuwen",
+          "Score": 87
+        },
+        {
+          "Name": "物理",
+          "enName": "wuli",
+          "Score": 12
+        },
+        {
+          "Name": "化学",
+          "enName": "huaxue",
+          "Score": 98
+        }
+      ]
+    },
+    {
+      "patientName": "李四",
+      "sex": "M",
+      "age": 28,
+      "birth": "19870101",
+      "Subjects": [
+        {
+          "Name": "数学",
+          "enName": "shuxue",
+          "Score": 100
+        },
+        {
+          "Name": "语文",
+          "enName": "yuwen",
+          "Score": 97
+        },
+        {
+          "Name": "物理",
+          "enName": "wuli",
+          "Score": 74
+        },
+        {
+          "Name": "化学",
+          "enName": "huaxue",
+          "Score": 88
+        }
+      ]
+    }
+  ]
+}
